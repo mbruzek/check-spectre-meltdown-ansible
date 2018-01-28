@@ -1,0 +1,29 @@
+---
+- name: Check the flags in the the spectre and meltdown system files
+  hosts: all
+  become: true
+  gather_facts: false
+  vars:
+    sys_kernel_debug_path: "/sys/kernel/debug/x86"
+    # Indirect Branch Prediction Barriers (ibpb)
+    ibpb_path: "{{ sys_kernel_debug_path }}/ibpb_enabled"
+    # Indirect Branch Restricted Speculation (ibrs)
+    ibrs_path: "{{ sys_kernel_debug_path }}/ibrs_enabled"
+    # Page Table Isolation (pti)
+    pti_path: "{{ sys_kernel_debug_path }}/pti_enabled"
+  tasks:
+    # The files will contain a 1 for enabled and 0 for disabled.
+    - name: Checking for pti ibrs and ibpb flags
+      command: "cat {{ pti_path }} {{ ibrs_path }} {{ ibpb_path }}"
+      register: pti_ibrs_ibpb
+      changed_when: false
+
+    # All three flags must be set for the fix to be enabled.
+    - name: Setting "enabled" or "disabled" based on the pti, ibrs and ibpr flags
+      set_fact:
+        status: "{{ (pti_ibrs_ibpb['stdout_lines'][0] == '1' and pti_ibrs_ibpb['stdout_lines'][1] == '1' and pti_ibrs_ibpb['stdout_lines'][2] == '1')|ternary('enabled','disabled') }}"
+
+    # Print the results to the console.
+    - name: Printing the results for spectre and meltdown protection
+      debug:
+        msg: "The spectre/meltdown protection is {{ status }}. pti {{ pti_ibrs_ibpb['stdout_lines'][0] }} ibrs {{ pti_ibrs_ibpb['stdout_lines'][1] }} ibpb {{ pti_ibrs_ibpb['stdout_lines'][2] }}"

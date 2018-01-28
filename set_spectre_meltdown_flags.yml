@@ -1,0 +1,38 @@
+---
+- name: Set the three system files with the correct flag to enable or disable the spectre and meltdown protection
+  hosts: all
+  become: true
+  gather_facts: false
+  vars:
+    sys_kernel_debug_path: "/sys/kernel/debug/x86"
+    # Indirect Branch Prediction Barriers (ibpb)
+    ibpb_path: "{{ sys_kernel_debug_path }}/ibpb_enabled"
+    # Indirect Branch Restricted Speculation (ibrs)
+    ibrs_path: "{{ sys_kernel_debug_path }}/ibrs_enabled"
+    # Page Table Isolation (pti)
+    pti_path: "{{ sys_kernel_debug_path }}/pti_enabled"
+  vars_prompt:
+    - name: "pti_value"
+      prompt: "Page Table Isolation (pti) enabled? "
+      default: "1"
+      private: no
+    - name: "ibrs_value"
+      prompt: "Indirect Branch Restricted Speculation (ibrs) enabled? "
+      default: "1"
+      private: no
+    - name: "ibpb_value"
+      prompt: "Indirect Branch Prediction Barriers (ibpb) enabled? "
+      default: "1"
+      private: no
+  tasks:
+    # Set the pti_enabled value based on the boolean variable.
+    - name: Setting pti value
+      shell: "echo {{ pti_value }} > {{ pti_path }}"
+
+    # Set the ibrs_enabled value based on the boolean variable.
+    - name: Setting ibrs value
+      shell: "echo {{ ibrs_value }} > {{ ibrs_path }}"
+
+    # Set the ibpb_enabled value based on the boolean variable.
+    - name: Setting ibpb value
+      shell: "echo {{ ibpb_value }} > {{ ibpb_path }}"
