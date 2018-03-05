@@ -12,7 +12,7 @@
     # Page Table Isolation (pti)
     pti_path: "{{ sys_kernel_debug_path }}/pti_enabled"
     # Retpoline (retp)
-    retp_path: "{{ sys_kernel_debug_path }}retp_enabled"
+    retp_path: "{{ sys_kernel_debug_path }}/retp_enabled"
   vars_prompt:
     - name: "retp_value"
       prompt: "Retpoline (retp) enabled? "
