@@ -4,9 +4,8 @@
   become: true
   gather_facts: false
   vars:
+    # The path to the x86 specific kernel flags.
     sys_kernel_debug_path: "/sys/kernel/debug/x86"
-    # Indirect Branch Prediction Barriers (ibpb)
-    ibpb_path: "{{ sys_kernel_debug_path }}/ibpb_enabled"
     # Indirect Branch Restricted Speculation (ibrs)
     ibrs_path: "{{ sys_kernel_debug_path }}/ibrs_enabled"
     # Page Table Isolation (pti)
@@ -35,7 +34,7 @@
     - name: Setting ibrs value
       shell: "echo {{ ibrs_value }} > {{ ibrs_path }}"
 
-    # ibpb is now read-only and managed by the kernel.
+    # Do not set ibpb flag. ibpb is now read-only and managed by the kernel.
 
     # Set the pti_enabled value based on the string variable.
     - name: Setting pti value

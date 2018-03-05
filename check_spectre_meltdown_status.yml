@@ -4,6 +4,14 @@
   become: true
   gather_facts: false
   vars:
+    # The path to the cpu vulnerabilities files.
+    vulnerabilities_path: "/sys/devices/system/cpu/vulnerabilities"
+    # The path to the meltdown vulnerability file.
+    meltdown_path: "{{ vulnerabilities_path }}/meltdown"
+    # The path to the spectre_v1 vulnerability file.
+    spectre_v1_path: "{{ vulnerabilities_path }}/spectre_v1"
+    # The path to the spectre_v2 vulnerability file.
+    spectre_v2_path: "{{ vulnerabilities_path }}/spectre_v2"
     # The path to the x86 specific kernel flags.
     sys_kernel_debug_path: "/sys/kernel/debug/x86"
     # Indirect Branch Prediction Barriers (ibpb)
@@ -14,20 +22,44 @@
     pti_path: "{{ sys_kernel_debug_path }}/pti_enabled"
     # Retpoline (retp)
     retp_path: "{{ sys_kernel_debug_path }}/retp_enabled"
+    vulnerabilities:
+      stdout_lines:
+        - ""
+        - ""
+        - ""
   tasks:
+    # The vulnerability files will contain words related to the status.
+    - name: Getting current vulnerability status
+      command: "cat {{ meltdown_path }} {{ spectre_v1_path }} {{ spectre_v2_path }}"
+      register: vulnerabilities
+      changed_when: false
+      # These files may not exist in earlier kernels.
+      ignore_errors: true
+
     # The files will contain a 1 for enabled and 0 for disabled.
     - name: Getting current status for retp, ibrs, ibpb, and pti flags
       command: "cat {{ retp_path }} {{ ibrs_path }} {{ ibpb_path }} {{ pti_path }}"
-      register: values
+      register: flags
       changed_when: false
 
     # Calculate enabled or disabled based on the flags current state.
     - name: Setting "enabled" or "disabled" based on the current status of the flags
       set_fact:
         # According to the most recent information disabled is (pti == 0 & ibrs == 0 & retp == 0).
-        status: "{{ (values['stdout_lines'][0] == '0' and values['stdout_lines'][1] == '0' and values['stdout_lines'][3] == '0')|ternary('disabled','enabled') }}"
+        status: "{{ (flags['stdout_lines'][0] == '0' and flags['stdout_lines'][1] == '0' and flags['stdout_lines'][3] == '0')|ternary('disabled','enabled') }}"
 
-    # Print the results to the console.
-    - name: Printing the results for spectre and meltdown protection
+    # Print the results of the flags to the console.
+    - name: Printing the results of the spectre and meltdown flags
       debug:
-        msg: "The spectre/meltdown protection is {{ status }}. retp = {{ values['stdout_lines'][0] }}, ibrs = {{ values['stdout_lines'][1] }}, ibpb = {{ values['stdout_lines'][2] }}, pti = {{ values['stdout_lines'][3] }}"
+        msg: >
+          The spectre/meltdown flags are {{ status }}.
+          retp = {{ flags['stdout_lines'][0] }},
+          ibrs = {{ flags['stdout_lines'][1] }},
+          ibpb = {{ flags['stdout_lines'][2] }},
+          pti = {{ flags['stdout_lines'][3] }};\n
+          meltdown = {{ vulnerabilities['stdout_lines'][0] }},
+          spectre_v1 = {{ vulnerabilities['stdout_lines'][1] }},
+          spectre_v2 = {{ vulnerabilities['stdout_lines'][2] }}
+
+    # Print the results of the vulnerabilities to the console.
+    - name: Printing the
