@@ -22,10 +22,6 @@
       prompt: "Indirect Branch Restricted Speculation (ibrs) enabled? "
       default: "1"
       private: no
-    - name: "ibpb_value"
-      prompt: "Indirect Branch Prediction Barriers (ibpb) enabled? "
-      default: "1"
-      private: no
     - name: "pti_value"
       prompt: "Page Table Isolation (pti) enabled? "
       default: "1"
@@ -39,9 +35,7 @@
     - name: Setting ibrs value
       shell: "echo {{ ibrs_value }} > {{ ibrs_path }}"
 
-    # Set the ibpb_enabled value based on the string variable.
-    - name: Setting ibpb value
-      shell: "echo {{ ibpb_value }} > {{ ibpb_path }}"
+    # ibpb is now read-only and managed by the kernel.
 
     # Set the pti_enabled value based on the string variable.
     - name: Setting pti value

@@ -72,12 +72,9 @@ complete protection unless SMT is also disabled. This feature addresses
 CVE-2017-5715, variant #2.
 
 Customer and vendors can disable the ibpb implementation in microcode by
-passing "noibpb" to the kernel command line at boot, or dynamically with the
-debugfs control below:
-
-```
-echo 0 > /sys/kernel/debug/x86/ibpb_enabled
-```
+passing "noibpb" to the kernel command line at boot. With the introduction
+of the retpoline flag, ibpb is now read-only.  If both ibrs and retp are 0,
+then the kernel sets ibpb to 0, otherwise ibpb will be 1.
 
 ### check_spectre_meltdown_status.yml
 Use this playbook to check the flags for the system settings.
