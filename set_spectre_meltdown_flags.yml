@@ -1,5 +1,5 @@
 ---
-- name: Set the three system files with the correct flag to enable or disable the spectre and meltdown protection
+- name: Set the system files with the correct flag to enable or disable the spectre and meltdown protection
   hosts: all
   become: true
   gather_facts: false
@@ -11,9 +11,11 @@
     ibrs_path: "{{ sys_kernel_debug_path }}/ibrs_enabled"
     # Page Table Isolation (pti)
     pti_path: "{{ sys_kernel_debug_path }}/pti_enabled"
+    # Retpoline (retp)
+    retp_path: "{{ sys_kernel_debug_path }}retp_enabled"
   vars_prompt:
-    - name: "pti_value"
-      prompt: "Page Table Isolation (pti) enabled? "
+    - name: "retp_value"
+      prompt: "Retpoline (retp) enabled? "
       default: "1"
       private: no
     - name: "ibrs_value"
@@ -24,15 +26,23 @@
       prompt: "Indirect Branch Prediction Barriers (ibpb) enabled? "
       default: "1"
       private: no
+    - name: "pti_value"
+      prompt: "Page Table Isolation (pti) enabled? "
+      default: "1"
+      private: no
   tasks:
-    # Set the pti_enabled value based on the boolean variable.
-    - name: Setting pti value
-      shell: "echo {{ pti_value }} > {{ pti_path }}"
+    # Set the retp_enabled value based on the string variable.
+    - name: Setting retp value
+      shell: "echo {{ retp_value }} > {{ retp_path }}"
 
-    # Set the ibrs_enabled value based on the boolean variable.
+    # Set the ibrs_enabled value based on the string variable.
     - name: Setting ibrs value
       shell: "echo {{ ibrs_value }} > {{ ibrs_path }}"
 
-    # Set the ibpb_enabled value based on the boolean variable.
+    # Set the ibpb_enabled value based on the string variable.
     - name: Setting ibpb value
       shell: "echo {{ ibpb_value }} > {{ ibpb_path }}"
+
+    # Set the pti_enabled value based on the string variable.
+    - name: Setting pti value
+      shell: "echo {{ pti_value }} > {{ pti_path }}"

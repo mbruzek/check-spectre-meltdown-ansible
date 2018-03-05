@@ -13,6 +13,18 @@ characteristics when compared to unpatched vulnerable systems. Therefore some
 customers may elect to disable these patches when they are confident that their
 systems are protected by other means.
 
+## Retpoline (retp)
+A binary modification technique that protects against "branch target injection"
+attacks. Developed at Google and shared with partners. A retpoline is a return
+trampoline that uses an infinite loop that is never executed to prevent the
+CPU from speculating on the target of an indirect jump.
+
+To control this feature, echo 1 or 0 to the retp_enabled file:
+
+```
+echo 0 > /sys/kernel/debug/x86/retp_enabled
+```
+
 ## Page Table Isolation (pti)
 
 The **pti_enabled** controls the Kernel Page Table Isolation feature, which
@@ -68,13 +80,13 @@ echo 0 > /sys/kernel/debug/x86/ibpb_enabled
 ```
 
 ### check_spectre_meltdown_status.yml
-Use this playbook to check the flags for the 3 system settings.
+Use this playbook to check the flags for the system settings.
 ```
 ansible-playbook -i hosts check_spectre_meltdown_status.yml
 ```
 
 ### set_spectre_meltdown_flags.yml
-Use this playbook to set the three flags for the spectre meltdown protection.
+Use this playbook to set the flags for the spectre meltdown protection.
 
 ```
 ansible-playbook -i hosts set_spectre_meltdown_flags.yml
